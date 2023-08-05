@@ -27,13 +27,13 @@ class _Federation:
         parser.add_argument('--test_batch', type=int, default=128, help='batch size for test')
 
         # federated
-        parser.add_argument('--pd_nuser', type=int, default=100, help='#users per domain.')# 30 100 10
-        parser.add_argument('--pr_nuser', type=int, default=10, help='#users per comm round '
+        parser.add_argument('--pd_nuser', type=int, default=10, help='#users per domain.')# 30 100 10
+        parser.add_argument('--pr_nuser', type=int, default=5, help='#users per comm round '
                                                                      '[default: all]')#-1 10 10
-        parser.add_argument('--pu_nclass', type=int, default=3, help='#class per user. -1 or 0: all')# -1 10 3
+        parser.add_argument('--pu_nclass', type=int, default=-1, help='#class per user. -1 or 0: all')# -1 10 3
         parser.add_argument('--domain_order', choices=list(range(5)), type=int, default=0,
                             help='select the order of domains')
-        parser.add_argument('--partition_mode', choices=['uni', 'dir'], type=str.lower, default='uni',
+        parser.add_argument('--partition_mode', choices=['uni', 'dir'], type=str.lower, default='dir',
                             help='the mode when splitting domain data into users: uni - uniform '
                                  'distribution (all user have the same #samples); dir - Dirichlet'
                                  ' distribution (non-iid sample sizes)')

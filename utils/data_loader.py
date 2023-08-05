@@ -70,30 +70,10 @@ def get_central_data(name: str, domains: list, percent=1., image_norm='none',
                                    train=False,
                                    transform=compose_transforms(trns[domain], image_norm))
                      for domain in domains]
-    elif name.lower() in ('domainnet', 'domainnetf'):
-        transform_train = transforms.Compose([
-            transforms.Resize([256, 256]),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation((-30, 30)),
-            transforms.ToTensor(),
-        ])
-
-        transform_test = transforms.Compose([
-            transforms.Resize([256, 256]),
-            transforms.ToTensor(),
-        ])
-
-        train_sets = [
-            DomainNetDataset(domain, transform=transform_train,
-                             full_set=name.lower()=='domainnetf')
-            for domain in domains
-        ]
-        test_sets = [
-            DomainNetDataset(domain, transform=transform_test, train=False,
-                             full_set=name.lower()=='domainnetf')
-            for domain in domains
-        ]
+        
     elif name.lower() == 'cifar10':
+        CIFAR_MEAN = [0.49139968, 0.48215827, 0.44653124]
+        CIFAR_STD = [0.24703233, 0.24348505, 0.26158768]
         if image_norm == 'default':
             image_norm = 'torch'
         for domain in domains:
@@ -101,8 +81,10 @@ def get_central_data(name: str, domains: list, percent=1., image_norm='none',
                 raise ValueError(f"Invalid domain: {domain}")
         trn_train = [transforms.RandomCrop(32, padding=4),
                      transforms.RandomHorizontalFlip(),
-                     transforms.ToTensor()]
-        trn_test = [transforms.ToTensor()]
+                     transforms.ToTensor(),
+                     transforms.Normalize(CIFAR_MEAN, CIFAR_STD)]
+        trn_test = [transforms.ToTensor(),
+                    transforms.Normalize(CIFAR_MEAN, CIFAR_STD)]
 
         train_sets = [CifarDataset(domain, train=True,
                                    transform=compose_transforms(trn_train, image_norm))
@@ -112,6 +94,8 @@ def get_central_data(name: str, domains: list, percent=1., image_norm='none',
                      for domain in domains]
         
     elif name.lower() == 'cifar100':
+        CIFAR_MEAN = [0.5071, 0.4865, 0.4409]
+        CIFAR_STD = [0.2673, 0.2564, 0.2762]
         if image_norm == 'default':
             image_norm = 'torch'
         for domain in domains:
@@ -120,20 +104,39 @@ def get_central_data(name: str, domains: list, percent=1., image_norm='none',
         trn_train = transforms.Compose([transforms.RandomCrop(32, padding=4),
                      transforms.RandomHorizontalFlip(),
                      transforms.ToTensor(),
-                     transforms.Normalize(mean=[0.507, 0.487, 0.441],
-                                          std=[0.267, 0.256, 0.276])])
+                     transforms.Normalize(CIFAR_MEAN, CIFAR_STD)])
         
     
         trn_test = transforms.Compose([transforms.ToTensor(),
-                                       transforms.Normalize(mean=[0.507, 0.487, 0.441],
-                                                            std=[0.267, 0.256, 0.276])])
+                                       transforms.Normalize(CIFAR_MEAN, CIFAR_STD)])
         
 
         train_sets = [Cifar100Dataset(domain, train=True, transform=trn_train)
                       for domain in domains]
         test_sets = [Cifar100Dataset(domain, train=False,transform=trn_test)
                      for domain in domains]
+    elif name.lower() == 'cifar100':
+        CIFAR_MEAN = [0.5071, 0.4865, 0.4409]
+        CIFAR_STD = [0.2673, 0.2564, 0.2762]
+        if image_norm == 'default':
+            image_norm = 'torch'
+        for domain in domains:
+            if domain not in Cifar100Dataset.all_domains:
+                raise ValueError(f"Invalid domain: {domain}")
+        trn_train = transforms.Compose([transforms.RandomCrop(32, padding=4),
+                     transforms.RandomHorizontalFlip(),
+                     transforms.ToTensor(),
+                     transforms.Normalize(CIFAR_MEAN, CIFAR_STD)])
         
+    
+        trn_test = transforms.Compose([transforms.ToTensor(),
+                                       transforms.Normalize(CIFAR_MEAN, CIFAR_STD)])
+        
+
+        train_sets = [Cifar100Dataset(domain, train=True, transform=trn_train)
+                      for domain in domains]
+        test_sets = [Cifar100Dataset(domain, train=False,transform=trn_test)
+                     for domain in domains]
     else:
         raise NotImplementedError(f"name: {name}")
     return train_sets, test_sets
@@ -164,6 +167,9 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
     print(f" test  size: {[len(s) for s in test_sets]}")
 
     train_len = [len(s) for s in train_sets]
+    test_len = [len(s) for s in test_sets]
+    num_sample_train = train_len[0]
+    num_sample_test = test_len[0]
     if eq_domain_train_size:
         train_len = [min(train_len)] * len(train_sets)
         # assert all([len(s) == train_len[0] for s in train_sets]), f"Should be equal length."
@@ -209,7 +215,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                 split = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
                                              n_class_per_share=n_class_per_user,
                                              min_n_sample_per_share=min_n_sample_per_share,
-                                             partition_mode='uni',
+                                             partition_mode=partition_mode,
                                              verbose=True)
             sub_test_sets = []
             for i_client, te_set in enumerate(test_sets):
@@ -252,7 +258,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
             if consistent_test_class:
                 split = Partitioner(rng=np.random.RandomState(partition_seed),
                                     min_n_sample_per_share=min_n_sample_per_share,
-                                    partition_mode='uni')
+                                    partition_mode=partition_mode)
             sub_test_sets = []
             for te_set in test_sets:
                 _test_len_by_user = split(len(te_set), n_user_per_domain)
@@ -362,7 +368,7 @@ def prepare_cifar_data(args, domains=['cifar10'], shuffle_eval=False, n_class_pe
         partition_seed=partition_seed, n_user_per_domain=n_user_per_domain,
         partition_mode=partition_mode,
         val_ratio=val_ratio, eq_domain_train_size=eq_domain_train_size, percent=args.percent,
-        min_n_sample_per_share=64 if n_class_per_user > 3 else 16, subset_with_logits=subset_with_logits,
+        min_n_sample_per_share=10, subset_with_logits=subset_with_logits,
         n_class_per_user=n_class_per_user,
         test_batch_size=args.test_batch if hasattr(args, 'test_batch') else args.batch,
         consistent_test_class=consistent_test_class,
@@ -381,7 +387,7 @@ def prepare_cifar100_data(args, domains=['cifar100'], shuffle_eval=False, n_clas
         partition_seed=partition_seed, n_user_per_domain=n_user_per_domain,
         partition_mode=partition_mode,
         val_ratio=val_ratio, eq_domain_train_size=eq_domain_train_size, percent=args.percent,
-        min_n_sample_per_share=0 if n_class_per_user > 3 else 16, subset_with_logits=subset_with_logits,
+        min_n_sample_per_share=100, subset_with_logits=subset_with_logits,
         n_class_per_user=n_class_per_user,
         test_batch_size=args.test_batch if hasattr(args, 'test_batch') else args.batch,
         consistent_test_class=consistent_test_class,

@@ -20,7 +20,7 @@ from federated.core import HeteFederation as Federation
 def render_run_name(args, exp_folder):
     """Return a unique run_name from given args."""
     if args.model == 'default':
-        args.model = {'Digits': 'digit', 'Cifar10': 'preresnet18', 'Cifar100': 'mobile', 'DomainNet': 'alex'}[args.data]
+        args.model = {'Digits': 'digit', 'Cifar10': 'preresnet18', 'Cifar100': 'preresnet18','fmnist': 'preresnet18', 'DomainNet': 'alex'}[args.data]
     run_name = f'{args.model}'
     if args.width_scale != 1.: run_name += f'x{args.width_scale}'
     run_name += Federation.render_run_name(args)
@@ -438,10 +438,10 @@ if __name__ == '__main__':
     Federation.add_argument(parser)
     # optimization
     parser.add_argument('--lr', type=float, default=1e-1, help='learning rate') #1e-2 1e-1
-    parser.add_argument('--lr_sch', type=str, default='multi_step', help='learning rate schedule') #'none'  'cos'
+    parser.add_argument('--lr_sch', type=str, default='none', help='learning rate schedule') #'none'  'cos'
     parser.add_argument('--opt', type=str.lower, default='sgd', help='optimizer')
-    parser.add_argument('--iters', type=int, default=80, help='#iterations for communication')#200
-    parser.add_argument('--wk_iters', type=int, default=4, help='#epochs in local train')#5 1 
+    parser.add_argument('--iters', type=int, default=1000, help='#iterations for communication')#200
+    parser.add_argument('--wk_iters', type=int, default=1, help='#epochs in local train')#5 1 
 
     args = parser.parse_args()
 

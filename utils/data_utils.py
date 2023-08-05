@@ -244,39 +244,38 @@ class Partitioner(object):
         Returns:
             partition: A list of num of samples for each share.
         """
-        assert n_share > 0, f"cannot split into {n_share} share"
-        if self.verbose:
-            log(f"  {n_sample} smp => {n_share} shards by {self.partition_mode} distr")
-        if self.max_n_sample > 0:
-            n_sample = min((n_sample, self.max_n_sample))
-        if self.max_n_sample_per_share > 0:
-            n_sample = min((n_sample, n_share * self.max_n_sample_per_share))
-
-        if n_sample < self.min_n_sample_per_share * n_share:
-            raise ValueError(f"Not enough samples. Require {self.min_n_sample_per_share} samples"
-                             f" per share at least for {n_share} shares. But only {n_sample} is"
-                             f" available totally.")
-        n_sample -= self.min_n_sample_per_share * n_share
         if self.partition_mode == "dir":
-            partition = (self.rng.dirichlet(n_share * [1]) * n_sample).astype(int)
-        elif self.partition_mode == "uni":
-            partition = int(n_sample // n_share) * np.ones(n_share, dtype='int')
+            min_size = 0
+            K = self.min_n_sample_per_share
+            N = n_sample
+
+            while min_size < self.class_num:
+                idx_batch = [[] for _ in range(self.client_number)]
+                # for each class in the dataset
+                for k in range(K):
+                    proportions = np.random.dirichlet(np.repeat(self.partition_alpha, self.client_number))
+                    if self.dirichlet_balance:
+                        argsort_proportions = np.argsort(proportions, axis=0)
+                        if k != 0:
+                            used_p = np.array([len(idx_j) for idx_j in idx_batch])
+                            argsort_used_p = np.argsort(used_p, axis=0)
+                            inv_argsort_proportions = argsort_proportions[::-1]
+                            # print(used_p)
+                            # print(argsort_used_p)
+                            # proportions = np.random.random(self.client_number)
+                            proportions[argsort_used_p] = proportions[inv_argsort_proportions]
+                            # print(np.argsort(proportions, axis=0))
+                    else:
+                        proportions = np.array([p * (len(idx_j) < N / self.client_number) for p, idx_j in zip(proportions, idx_batch)])
+
+                    ## set a min value to smooth, avoid too much zero samples of some classes.
+                    if self.dirichlet_min_p is not None:
+                        proportions += float(self.dirichlet_min_p)
+                    proportions = proportions / proportions.sum()
+                    proportions = (np.cumsum(proportions) * n_sample / self.min_n_sample_per_share).astype(int)[:-1]
         else:
             raise ValueError(f"Invalid partition_mode: {self.partition_mode}")
-
-        # uniformly add residual to as many users as possible.
-        for i in self.rng.choice(n_share, n_sample - np.sum(partition)):
-            partition[i] += 1
-            # partition[-1] += n_sample - np.sum(partition)  # add residual
-        assert sum(partition) == n_sample, f"{sum(partition)} != {n_sample}"
-        partition = partition + self.min_n_sample_per_share
-        n_sample += self.min_n_sample_per_share * n_share
-        # partition = np.minimum(partition, max_n_sample_per_share)
-        partition = partition.tolist()
-
-        assert sum(partition) == n_sample, f"{sum(partition)} != {n_sample}"
-        assert len(partition) == n_share, f"{len(partition)} != {n_share}"
-        return partition
+        return proportions
 
 
 class ClassWisePartitioner(Partitioner):

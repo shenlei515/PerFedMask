@@ -252,11 +252,11 @@ class Partitioner(object):
             N = n_sample
 
             while min_size < self.min_n_sample_per_share:
-                idx_batch = [[] for _ in range(self.client_number)]
+                idx_batch = [[] for _ in range(n_share)]
                 # for each class in the dataset
                 for k in range(K):
-                    proportions = np.random.dirichlet(np.repeat(self.partition_alpha, self.client_number))
-                    proportions = np.array([p * (len(idx_j) < N / self.client_number) for p, idx_j in zip(proportions, idx_batch)])
+                    proportions = np.random.dirichlet(np.repeat(self.partition_alpha, n_share))
+                    proportions = np.array([p * (len(idx_j) < N / n_share) for p, idx_j in zip(proportions, idx_batch)])
                     proportions = proportions / proportions.sum()
                     proportions = (np.cumsum(proportions) * n_sample / self.min_n_sample_per_share).astype(int)[:-1]
         else:

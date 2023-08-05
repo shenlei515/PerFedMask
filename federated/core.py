@@ -23,7 +23,7 @@ class _Federation:
                             help='percentage of dataset for training') # 1.0 1.0 0.3
         parser.add_argument('--val_ratio', type=float, default=0.1,
                             help='ratio of train set for validation') #  0.3 0.1 0.5
-        parser.add_argument('--batch', type=int, default=50, help='batch size')# 32  128
+        parser.add_argument('--batch', type=int, default=128, help='batch size')# 32  128
         parser.add_argument('--test_batch', type=int, default=128, help='batch size for test')
 
         # federated
@@ -37,6 +37,7 @@ class _Federation:
                             help='the mode when splitting domain data into users: uni - uniform '
                                  'distribution (all user have the same #samples); dir - Dirichlet'
                                  ' distribution (non-iid sample sizes)')
+        parser.add_argument('--partition_alpha', type=float, default=0.1)
         parser.add_argument('--con_test_cls', type=str2bool, default=True,
                             help='Ensure the test classes are the same training for a client. '
                                  'Meanwhile, make test sets are uniformly splitted for clients. '

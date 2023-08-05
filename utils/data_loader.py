@@ -149,7 +149,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                   num_workers=0, pin_memory=False, min_n_sample_per_share=128,
                   subset_with_logits=False,
                   test_batch_size=None, shuffle=True,
-                  consistent_test_class=False):
+                  consistent_test_class=False, partition_alpha=0.1):
     """Distribute multi-domain datasets (`train_sets`) into federated clients.
 
     Args:
@@ -233,7 +233,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
         else:  # class iid
             split = Partitioner(rng=np.random.RandomState(partition_seed),
                                 min_n_sample_per_share=min_n_sample_per_share,
-                                partition_mode=partition_mode)
+                                partition_mode=partition_mode, partition_alpha=partition_alpha)
             splitted_clients = []
 
             val_sets, sub_train_sets = [], []
@@ -258,7 +258,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
             if consistent_test_class:
                 split = Partitioner(rng=np.random.RandomState(partition_seed),
                                     min_n_sample_per_share=min_n_sample_per_share,
-                                    partition_mode=partition_mode)
+                                    partition_mode=partition_mode, partition_alpha=partition_alpha)
             sub_test_sets = []
             for te_set in test_sets:
                 _test_len_by_user = split(len(te_set), n_user_per_domain)
@@ -372,6 +372,7 @@ def prepare_cifar_data(args, domains=['cifar10'], shuffle_eval=False, n_class_pe
         n_class_per_user=n_class_per_user,
         test_batch_size=args.test_batch if hasattr(args, 'test_batch') else args.batch,
         consistent_test_class=consistent_test_class,
+        partition_alpha=args.partition_alpha
     )
     return train_loaders, val_loaders, test_loaders, clients
 

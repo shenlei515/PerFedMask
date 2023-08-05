@@ -228,12 +228,14 @@ class Partitioner(object):
                  max_n_sample_per_share=-1,
                  min_n_sample_per_share=2,
                  max_n_sample=-1,
-                 verbose=True
+                 verbose=True,
+                 partition_alpha=0.1
                  ):
         assert max_n_sample_per_share < 0 or max_n_sample_per_share > min_n_sample_per_share, \
             f"max ({max_n_sample_per_share}) > min ({min_n_sample_per_share})"
         self.rng = rng if rng else np.random
         self.partition_mode = partition_mode
+        self.partition_alpha = partition_alpha
         self.max_n_sample_per_share = max_n_sample_per_share
         self.min_n_sample_per_share = min_n_sample_per_share
         self.max_n_sample = max_n_sample
@@ -249,28 +251,12 @@ class Partitioner(object):
             K = self.min_n_sample_per_share
             N = n_sample
 
-            while min_size < self.class_num:
+            while min_size < self.min_n_sample_per_share:
                 idx_batch = [[] for _ in range(self.client_number)]
                 # for each class in the dataset
                 for k in range(K):
                     proportions = np.random.dirichlet(np.repeat(self.partition_alpha, self.client_number))
-                    if self.dirichlet_balance:
-                        argsort_proportions = np.argsort(proportions, axis=0)
-                        if k != 0:
-                            used_p = np.array([len(idx_j) for idx_j in idx_batch])
-                            argsort_used_p = np.argsort(used_p, axis=0)
-                            inv_argsort_proportions = argsort_proportions[::-1]
-                            # print(used_p)
-                            # print(argsort_used_p)
-                            # proportions = np.random.random(self.client_number)
-                            proportions[argsort_used_p] = proportions[inv_argsort_proportions]
-                            # print(np.argsort(proportions, axis=0))
-                    else:
-                        proportions = np.array([p * (len(idx_j) < N / self.client_number) for p, idx_j in zip(proportions, idx_batch)])
-
-                    ## set a min value to smooth, avoid too much zero samples of some classes.
-                    if self.dirichlet_min_p is not None:
-                        proportions += float(self.dirichlet_min_p)
+                    proportions = np.array([p * (len(idx_j) < N / self.client_number) for p, idx_j in zip(proportions, idx_batch)])
                     proportions = proportions / proportions.sum()
                     proportions = (np.cumsum(proportions) * n_sample / self.min_n_sample_per_share).astype(int)[:-1]
         else:

@@ -333,7 +333,7 @@ class ClassWisePartitioner(Partitioner):
 
         # assign sample indexes to clients
         if p_per_user_per_class is not None:
-            l_per_user_per_class={k:v*len(labels) for (k,v) in p_per_user_per_class}
+            l_per_user_per_class={k:v*len(labels) for k,v in p_per_user_per_class.items()}
             idx_by_user = [[] for _ in range(n_user)]
             if n_class > 100 or len(labels) > 1e5:
                 idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')
@@ -350,7 +350,7 @@ class ClassWisePartitioner(Partitioner):
                     base_idx += tl
         else:
             while min_size < self.min_n_sample_per_share:
-                l_per_user_per_class={}
+                l_per_user_per_class=defaultdict(list)
                 idx_by_user = [[] for _ in range(n_user)]
                 if n_class > 100 or len(labels) > 1e5:
                     idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')
@@ -367,7 +367,7 @@ class ClassWisePartitioner(Partitioner):
                         idx_by_user[i_user].extend(idx_by_class[c][base_idx:base_idx+tl])
                         base_idx += tl
                 min_size = min([len(idx_j) for idx_j in idx_by_user])
-        print("l_per_user_per_class",l_per_user_per_class)
+        
         if return_user_ids_by_class:
             return idx_by_user, user_ids_by_class, l_per_user_per_class
         else:

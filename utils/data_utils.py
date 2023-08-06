@@ -227,7 +227,7 @@ class Partitioner(object):
     """
     def __init__(self, rng=None, partition_mode="dir",
                  max_n_sample_per_share=-1,
-                 min_n_sample_per_share=2,
+                 min_n_sample_per_share=0,
                  max_n_sample=-1,
                  verbose=True,
                  partition_alpha=0.1

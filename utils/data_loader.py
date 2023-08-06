@@ -183,7 +183,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
         if n_class_per_user > 0:  # split by class-wise non-iid
             split = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
                                          n_class_per_share=n_class_per_user,
-                                         min_n_sample_per_share=min_n_sample_per_share,
+                                         min_sample=min_n_sample_per_share,
                                          partition_mode=partition_mode,
                                          verbose=True, partition_alpha=partition_alpha)
             splitted_clients = []

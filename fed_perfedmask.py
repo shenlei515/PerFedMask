@@ -74,26 +74,8 @@ def get_model_fh(data, model):
 
 
 def layerWiseModelPartition(dataset, names, paramSize):
-    
-    if dataset == 'Cifar100':
-        
-        layersNum = 14
-        LayerParams = np.zeros(layersNum)
-        
-        for layerIdx in range(len(names)):
-            
-            if ((layerIdx==0) or (layerIdx==1) or (layerIdx==2)):
-                LayerParams[0] += paramSize[layerIdx]
-                
-            else:
-                selectedLayer = np.array([names[layerIdx]])
-                LayerParams[int(selectedLayer[0].split('.')[1])+1] += paramSize[layerIdx]
-                
-                
-                
-        return  layersNum, LayerParams
 
-    elif dataset == 'Cifar10':
+    if dataset in ['Cifar10', 'Cifar100']:
 
         layersNum = 10
         LayerParams = np.zeros(layersNum)

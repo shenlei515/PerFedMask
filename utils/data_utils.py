@@ -333,7 +333,7 @@ class ClassWisePartitioner(Partitioner):
 
         # assign sample indexes to clients
         if p_per_user_per_class is not None:
-            l_per_user_per_class={k:v*len(labels) for k,v in p_per_user_per_class.items()}
+            l_per_user_per_class={k:int(v*len(labels)) for k,v in p_per_user_per_class.items()}
             idx_by_user = [[] for _ in range(n_user)]
             if n_class > 100 or len(labels) > 1e5:
                 idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')

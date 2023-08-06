@@ -214,7 +214,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                 print("l_per_user_per_class", l_per_user_per_class)
                 p_per_user_per_class={k:[i/num_sample_train for i in v] for k,v in l_per_user_per_class.items()}
                 # recreate partitioner to make sure consistent class distribution.
-                split = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
+                split, _ = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
                                              n_class_per_share=n_class_per_user,
                                              min_n_sample_per_share=min_n_sample_per_share * num_sample_test // num_sample_train,
                                              partition_mode=partition_mode,

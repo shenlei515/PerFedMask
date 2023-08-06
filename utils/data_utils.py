@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision.datasets import CIFAR10
@@ -300,7 +301,7 @@ class ClassWisePartitioner(Partitioner):
         self._aux_partitioner = Partitioner(**kwargs)
 
     def __call__(self, labels, n_user, log=print, user_ids_by_class=None,
-                 return_user_ids_by_class=False, consistent_class=False):
+                 return_user_ids_by_class=False, consistent_class=False, p_per_user_per_class= None):
         """Partition a list of labels into `n_user` shares.
         Returns:
             partition: A list of users, where each user include a list of sample indexes.
@@ -331,7 +332,8 @@ class ClassWisePartitioner(Partitioner):
                     user_ids_by_class[c].append(s)
 
         # assign sample indexes to clients
-        while min_size < self.min_n_sample_per_share:
+        if p_per_user_per_class is not None:
+            l_per_user_per_class={k:v*len(labels) for (k,v) in p_per_user_per_class}
             idx_by_user = [[] for _ in range(n_user)]
             if n_class > 100 or len(labels) > 1e5:
                 idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')
@@ -341,17 +343,35 @@ class ClassWisePartitioner(Partitioner):
             for c in idx_by_class_iter:
                 l = len(idx_by_class[c])
                 log(f" class-{c} => {len(user_ids_by_class[c])} shares")
-                l_by_user = self._aux_partitioner(l, len(user_ids_by_class[c]), log=log)
+                l_by_user = l_per_user_per_class[c]
                 base_idx = 0
                 for i_user, tl in zip(user_ids_by_class[c], l_by_user):
                     idx_by_user[i_user].extend(idx_by_class[c][base_idx:base_idx+tl])
                     base_idx += tl
-            min_size = min([len(idx_j) for idx_j in idx_by_user])
+        else:
+            while min_size < self.min_n_sample_per_share:
+                l_per_user_per_class=defaultdict(list)
+                idx_by_user = [[] for _ in range(n_user)]
+                if n_class > 100 or len(labels) > 1e5:
+                    idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')
+                    log = lambda log_s: idx_by_class_iter.set_postfix_str(log_s[:10])  # tqdm.write
+                else:
+                    idx_by_class_iter = idx_by_class
+                for c in idx_by_class_iter:
+                    l = len(idx_by_class[c])
+                    log(f" class-{c} => {len(user_ids_by_class[c])} shares")
+                    l_by_user = self._aux_partitioner(l, len(user_ids_by_class[c]), log=log)
+                    l_per_user_per_class[c]=copy.deepcopy(l_by_user)
+                    base_idx = 0
+                    for i_user, tl in zip(user_ids_by_class[c], l_by_user):
+                        idx_by_user[i_user].extend(idx_by_class[c][base_idx:base_idx+tl])
+                        base_idx += tl
+                min_size = min([len(idx_j) for idx_j in idx_by_user])
             
         if return_user_ids_by_class:
-            return idx_by_user, user_ids_by_class
+            return idx_by_user, user_ids_by_class, l_per_user_per_class
         else:
-            return idx_by_user
+            return idx_by_user, l_per_user_per_class
 
 
 def extract_labels(dataset: Dataset):

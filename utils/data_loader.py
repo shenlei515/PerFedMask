@@ -183,7 +183,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
         if n_class_per_user > 0:  # split by class-wise non-iid
             split = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
                                          n_class_per_share=n_class_per_user,
-                                         min_n_sample_per_share=0,
+                                         min_n_sample_per_share=min_n_sample_per_share,
                                          partition_mode=partition_mode,
                                          verbose=True, partition_alpha=partition_alpha)
             splitted_clients = []
@@ -191,7 +191,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
             for i_client, (dname, tr_set) in enumerate(zip(clients, train_sets)):
                 _tr_labels = extract_labels(tr_set)  # labels in the original order
                 _tr_labels = _tr_labels[:train_len[i_client]]  # trim
-                _idx_by_user, _user_ids_by_cls = split(_tr_labels, n_user_per_domain,
+                _idx_by_user, _user_ids_by_cls, l_per_user_per_class = split(_tr_labels, n_user_per_domain,
                                                        return_user_ids_by_class=True)
                 print(f" {dname} | train split size: {[len(idxs) for idxs in _idx_by_user]}")
                 _tr_labels = np.array(_tr_labels)
@@ -211,17 +211,18 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                 user_ids_by_class.append(_user_ids_by_cls if consistent_test_class else None)
 
             if consistent_test_class:
+                p_per_user_per_class={k:v/num_sample_train for (k,v) in l_per_user_per_class}
                 # recreate partitioner to make sure consistent class distribution.
                 split = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
                                              n_class_per_share=n_class_per_user,
-                                             min_n_sample_per_share=0,
+                                             min_n_sample_per_share=min_n_sample_per_share * num_sample_test // num_sample_train,
                                              partition_mode=partition_mode,
                                              verbose=True, partition_alpha=partition_alpha)
             sub_test_sets = []
             for i_client, te_set in enumerate(test_sets):
                 _te_labels = extract_labels(te_set)
                 _idx_by_user = split(_te_labels, n_user_per_domain,
-                                     user_ids_by_class=user_ids_by_class[i_client])
+                                     user_ids_by_class=user_ids_by_class[i_client], p_per_user_per_class= p_per_user_per_class)
                 print(f"   test split size: {[len(idxs) for idxs in _idx_by_user]}")
                 _te_labels = np.array(_te_labels)
                 print(f"   test classes: "

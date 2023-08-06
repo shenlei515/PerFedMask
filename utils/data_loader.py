@@ -297,7 +297,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
 
     train_loaders = [DataLoader(tr_set, batch_size=batch_size, shuffle=shuffle,
                                 num_workers=num_workers, pin_memory=pin_memory,
-                                drop_last=partition_mode != 'uni') for tr_set in train_sets]
+                                drop_last=False) for tr_set in train_sets]
     test_loaders = [DataLoader(te_set, batch_size=test_batch_size, shuffle=shuffle_eval,
                                num_workers=num_workers, pin_memory=pin_memory)
                     for te_set in test_sets]

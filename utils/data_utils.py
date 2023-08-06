@@ -367,7 +367,7 @@ class ClassWisePartitioner(Partitioner):
                         idx_by_user[i_user].extend(idx_by_class[c][base_idx:base_idx+tl])
                         base_idx += tl
                 min_size = min([len(idx_j) for idx_j in idx_by_user])
-            
+        print("l_per_user_per_class",l_per_user_per_class)
         if return_user_ids_by_class:
             return idx_by_user, user_ids_by_class, l_per_user_per_class
         else:

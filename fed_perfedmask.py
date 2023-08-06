@@ -63,9 +63,9 @@ def get_model_fh(data, model):
         else:
             raise ValueError(f"Invalid model: {model}")
     elif data == 'Cifar100':
-        if model in ['mobile']:  # From heteroFL
-            from nets.Nets import MobileNetCifar
-            ModelClass = MobileNetCifar
+        if model in ['preresnet18']:  # From heteroFL
+            from nets.HeteFL.preresne import resnet18
+            ModelClass = resnet18
         else:
             raise ValueError(f"Invalid model: {model}")
     else:

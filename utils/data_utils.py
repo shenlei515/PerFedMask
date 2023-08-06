@@ -255,11 +255,7 @@ class Partitioner(object):
             n_sample = min((n_sample, self.max_n_sample))
         if self.max_n_sample_per_share > 0:
             n_sample = min((n_sample, n_share * self.max_n_sample_per_share))
-
-        if n_sample < self.min_n_sample_per_share * n_share:
-            raise ValueError(f"Not enough samples. Require {self.min_n_sample_per_share} samples"
-                             f" per share at least for {n_share} shares. But only {n_sample} is"
-                             f" available totally.")
+        
         n_sample -= self.min_n_sample_per_share * n_share
         if self.partition_mode == "dir":
             partition = (self.rng.dirichlet(n_share * [self.partition_alpha]) * n_sample).astype(int)

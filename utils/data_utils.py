@@ -350,7 +350,7 @@ class ClassWisePartitioner(Partitioner):
                     base_idx += tl
         else:
             while min_size < self.min_n_sample_per_share:
-                l_per_user_per_class=defaultdict(list)
+                l_per_user_per_class={}
                 idx_by_user = [[] for _ in range(n_user)]
                 if n_class > 100 or len(labels) > 1e5:
                     idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')

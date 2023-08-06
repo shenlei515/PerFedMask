@@ -291,9 +291,10 @@ class ClassWisePartitioner(Partitioner):
         max_n_sample (int): max number of samples
         verbose (bool): verbosity
     """
-    def __init__(self, n_class_per_share=2, **kwargs):
+    def __init__(self, n_class_per_share=2, min_sample=0, **kwargs):
         super(ClassWisePartitioner, self).__init__(**kwargs)
         self.n_class_per_share = n_class_per_share
+        self.min_sample = min_sample
         self._aux_partitioner = Partitioner(**kwargs)
 
     def __call__(self, labels, n_user, log=print, user_ids_by_class=None,
@@ -345,7 +346,7 @@ class ClassWisePartitioner(Partitioner):
                     idx_by_user[i_user].extend(idx_by_class[c][base_idx:base_idx+tl])
                     base_idx += tl
         else:
-            while min_size < self.min_n_sample_per_share:
+            while min_size < self.min_sample:
                 l_per_user_per_class=defaultdict(list)
                 idx_by_user = [[] for _ in range(n_user)]
                 if n_class > 100 or len(labels) > 1e5:

@@ -246,23 +246,40 @@ class Partitioner(object):
         Returns:
             partition: A list of num of samples for each share.
         """
-        if self.partition_mode == "dir":
-            min_size = 0
-            K = self.min_n_sample_per_share
-            N = n_sample
+        
+        assert n_share > 0, f"cannot split into {n_share} share"
+        if self.verbose:
+            log(f"  {n_sample} smp => {n_share} shards by {self.partition_mode} distr")
+        if self.max_n_sample > 0:
+            n_sample = min((n_sample, self.max_n_sample))
+        if self.max_n_sample_per_share > 0:
+            n_sample = min((n_sample, n_share * self.max_n_sample_per_share))
 
-            while min_size < self.min_n_sample_per_share:
-                idx_batch = [[] for _ in range(n_share)]
-                # for each class in the dataset
-                for k in range(K):
-                    proportions = np.random.dirichlet(np.repeat(self.partition_alpha, n_share))
-                    proportions = np.array([p * (len(idx_j) < N / n_share) for p, idx_j in zip(proportions, idx_batch)])
-                    proportions = proportions / proportions.sum()
-                    proportions = (np.cumsum(proportions) * n_sample / self.min_n_sample_per_share).astype(int)[:-1]
+        if n_sample < self.min_n_sample_per_share * n_share:
+            raise ValueError(f"Not enough samples. Require {self.min_n_sample_per_share} samples"
+                             f" per share at least for {n_share} shares. But only {n_sample} is"
+                             f" available totally.")
+        n_sample -= self.min_n_sample_per_share * n_share
+        if self.partition_mode == "dir":
+            partition = (self.rng.dirichlet(n_share * [1]) * n_sample).astype(int)
+        elif self.partition_mode == "uni":
+            partition = int(n_sample // n_share) * np.ones(n_share, dtype='int')
         else:
             raise ValueError(f"Invalid partition_mode: {self.partition_mode}")
-        return proportions
 
+        # uniformly add residual to as many users as possible.
+        for i in self.rng.choice(n_share, n_sample - np.sum(partition)):
+            partition[i] += 1
+            # partition[-1] += n_sample - np.sum(partition)  # add residual
+        assert sum(partition) == n_sample, f"{sum(partition)} != {n_sample}"
+        partition = partition + self.min_n_sample_per_share
+        n_sample += self.min_n_sample_per_share * n_share
+        # partition = np.minimum(partition, max_n_sample_per_share)
+        partition = partition.tolist()
+
+        assert sum(partition) == n_sample, f"{sum(partition)} != {n_sample}"
+        assert len(partition) == n_share, f"{len(partition)} != {n_share}"
+        return partition
 
 class ClassWisePartitioner(Partitioner):
     """Partition a list of labels by class. Classes will be shuffled and assigned to users
@@ -289,6 +306,7 @@ class ClassWisePartitioner(Partitioner):
             partition: A list of users, where each user include a list of sample indexes.
         """
         # reorganize labels by class
+        min_size = 0
         idx_by_class = defaultdict(list)
         if len(labels) > 1e5:
             labels_iter = tqdm(labels, leave=False, desc='sort labels')
@@ -313,20 +331,23 @@ class ClassWisePartitioner(Partitioner):
                     user_ids_by_class[c].append(s)
 
         # assign sample indexes to clients
-        idx_by_user = [[] for _ in range(n_user)]
-        if n_class > 100 or len(labels) > 1e5:
-            idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')
-            log = lambda log_s: idx_by_class_iter.set_postfix_str(log_s[:10])  # tqdm.write
-        else:
-            idx_by_class_iter = idx_by_class
-        for c in idx_by_class_iter:
-            l = len(idx_by_class[c])
-            log(f" class-{c} => {len(user_ids_by_class[c])} shares")
-            l_by_user = self._aux_partitioner(l, len(user_ids_by_class[c]), log=log)
-            base_idx = 0
-            for i_user, tl in zip(user_ids_by_class[c], l_by_user):
-                idx_by_user[i_user].extend(idx_by_class[c][base_idx:base_idx+tl])
-                base_idx += tl
+        while min_size < self.min_n_sample_per_share:
+            idx_by_user = [[] for _ in range(n_user)]
+            if n_class > 100 or len(labels) > 1e5:
+                idx_by_class_iter = tqdm(idx_by_class, leave=True, desc='split cls')
+                log = lambda log_s: idx_by_class_iter.set_postfix_str(log_s[:10])  # tqdm.write
+            else:
+                idx_by_class_iter = idx_by_class
+            for c in idx_by_class_iter:
+                l = len(idx_by_class[c])
+                log(f" class-{c} => {len(user_ids_by_class[c])} shares")
+                l_by_user = self._aux_partitioner(l, len(user_ids_by_class[c]), log=log)
+                base_idx = 0
+                for i_user, tl in zip(user_ids_by_class[c], l_by_user):
+                    idx_by_user[i_user].extend(idx_by_class[c][base_idx:base_idx+tl])
+                    base_idx += tl
+            min_size = min([len(idx_j) for idx_j in idx_by_user])
+            
         if return_user_ids_by_class:
             return idx_by_user, user_ids_by_class
         else:

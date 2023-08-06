@@ -306,7 +306,7 @@ class ClassWisePartitioner(Partitioner):
             partition: A list of users, where each user include a list of sample indexes.
         """
         # reorganize labels by class
-        min_size = 0
+        min_size = -1
         idx_by_class = defaultdict(list)
         if len(labels) > 1e5:
             labels_iter = tqdm(labels, leave=False, desc='sort labels')

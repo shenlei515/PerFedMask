@@ -211,6 +211,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                 user_ids_by_class.append(_user_ids_by_cls if consistent_test_class else None)
 
             if consistent_test_class:
+                print("l_per_user_per_class", l_per_user_per_class)
                 p_per_user_per_class={k:v/num_sample_train for k,v in l_per_user_per_class}
                 # recreate partitioner to make sure consistent class distribution.
                 split = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),

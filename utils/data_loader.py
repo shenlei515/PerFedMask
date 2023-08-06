@@ -232,7 +232,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                     sub_test_sets.append(Subset(te_set, idxs))
         else:  # class iid
             split = Partitioner(rng=np.random.RandomState(partition_seed),
-                                min_n_sample_per_share=min_n_sample_per_share,
+                                min_n_sample_per_share=min_n_sample_per_share * num_sample_test // num_sample_train,
                                 partition_mode=partition_mode, partition_alpha=partition_alpha)
             splitted_clients = []
 

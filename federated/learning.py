@@ -73,7 +73,7 @@ def train(model, data_loader, optimizer, loss_fun, device, start_iter=0, max_ite
     loss_all = 0
     total = 0
     correct = 0
-    print("len(data_loader) in client", len(data_loader)
+    print("len(data_loader) in client", len(data_loader))
     max_iter = len(data_loader) if max_iter == np.inf else max_iter
     data_iterator = iter(data_loader)
     tqdm_iters = tqdm(range(start_iter, max_iter), file=sys.stdout) \

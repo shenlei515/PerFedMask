@@ -224,6 +224,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                 _te_labels = extract_labels(te_set)
                 _idx_by_user = split(_te_labels, n_user_per_domain,
                                      user_ids_by_class=user_ids_by_class[i_client], p_per_user_per_class= p_per_user_per_class)
+                print("_idx_by_user", _idx_by_user)
                 print(f"   test split size: {[len(idxs) for idxs in _idx_by_user]}")
                 _te_labels = np.array(_te_labels)
                 print(f"   test classes: "

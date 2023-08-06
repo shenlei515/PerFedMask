@@ -185,7 +185,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                                          n_class_per_share=n_class_per_user,
                                          min_n_sample_per_share=min_n_sample_per_share,
                                          partition_mode=partition_mode,
-                                         verbose=True)
+                                         verbose=True, partition_alpha=partition_alpha)
             splitted_clients = []
             val_sets, sub_train_sets, user_ids_by_class = [], [], []
             for i_client, (dname, tr_set) in enumerate(zip(clients, train_sets)):
@@ -216,7 +216,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                                              n_class_per_share=n_class_per_user,
                                              min_n_sample_per_share=min_n_sample_per_share,
                                              partition_mode=partition_mode,
-                                             verbose=True)
+                                             verbose=True, partition_alpha=partition_alpha)
             sub_test_sets = []
             for i_client, te_set in enumerate(test_sets):
                 _te_labels = extract_labels(te_set)

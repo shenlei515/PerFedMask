@@ -261,7 +261,7 @@ class Partitioner(object):
                              f" available totally.")
         n_sample -= self.min_n_sample_per_share * n_share
         if self.partition_mode == "dir":
-            partition = (self.rng.dirichlet(n_share * [1]) * n_sample).astype(int)
+            partition = (self.rng.dirichlet(n_share * [self.partition_alpha]) * n_sample).astype(int)
         elif self.partition_mode == "uni":
             partition = int(n_sample // n_share) * np.ones(n_share, dtype='int')
         else:

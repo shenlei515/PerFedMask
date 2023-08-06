@@ -214,7 +214,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
                 print("l_per_user_per_class", l_per_user_per_class)
                 p_per_user_per_class={k:[i/num_sample_train for i in v] for k,v in l_per_user_per_class.items()}
                 # recreate partitioner to make sure consistent class distribution.
-                split, _ = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
+                split = ClassWisePartitioner(rng=np.random.RandomState(partition_seed),
                                              n_class_per_share=n_class_per_user,
                                              min_n_sample_per_share=min_n_sample_per_share * num_sample_test // num_sample_train,
                                              partition_mode=partition_mode,
@@ -222,7 +222,7 @@ def make_fed_data(train_sets, test_sets, batch_size, domains, shuffle_eval=False
             sub_test_sets = []
             for i_client, te_set in enumerate(test_sets):
                 _te_labels = extract_labels(te_set)
-                _idx_by_user = split(_te_labels, n_user_per_domain,
+                _idx_by_user, _ = split(_te_labels, n_user_per_domain,
                                      user_ids_by_class=user_ids_by_class[i_client], p_per_user_per_class= p_per_user_per_class)
                 print("_idx_by_user", len(_idx_by_user))
                 print(f"   test split size: {[len(idxs) for idxs in _idx_by_user]}")

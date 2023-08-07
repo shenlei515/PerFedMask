@@ -27,6 +27,7 @@ if hostname.startswith('illidan') and int(hostname.split('-')[-1]) < 8:
         "DomainNetPathList": home_path + "projects/FedBN/data/",  # store the path list file from FedBN
         "Cifar10": data_root,
         "Cifar100": data_root,
+        "Fmnist": data_root,
     }
 else:
     DATA_PATHS = {
@@ -34,5 +35,6 @@ else:
         "DomainNet": data_root + "/DomainNet",
         "DomainNetPathList": data_root + "/DomainNet/domainnet10/",  # store the path list file from FedBN
         "Cifar10": data_root,
-        "cifar100": data_root,
+        "Cifar100": data_root,
+        "Fmnist": data_root,
     }

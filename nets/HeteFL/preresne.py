@@ -66,14 +66,16 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(ScalableModule):
-    input_shape = [None, 3, 32, 32]
 
     def __init__(self, hidden_size, block, num_blocks, num_classes=10, bn_type='bn',
                  share_affine=False, track_running_stats=True, width_scale=1.,
-                 rescale_init=False, rescale_layer=False):
+                 rescale_init=False, rescale_layer=False, dataset='Cifar10'):
         super(ResNet, self).__init__(width_scale=width_scale, rescale_init=rescale_init,
                                      rescale_layer=rescale_layer)
-
+        if dataset in ['Cifar10', 'Cifar100']:
+            self.input_shape = [None, 3, 32, 32]
+        elif dataset == 'Fmnist':
+            self.input_shape = [None, 1, 28, 28]
         if width_scale != 1.:
             hidden_size = [int(hs * width_scale) for hs in hidden_size]
         self.bn_type = bn_type
@@ -89,7 +91,8 @@ class ResNet(ScalableModule):
         conv_layer = nn.Conv2d
 
         self.in_planes = hidden_size[0]
-        self.conv1 = nn.Conv2d(3, hidden_size[0], kernel_size=3, stride=1, padding=1, bias=False)
+        self.model_input_channels = self.input_shape[1]
+        self.conv1 = nn.Conv2d(self.model_input_channels, hidden_size[0], kernel_size=3, stride=1, padding=1, bias=False)
         self.layer1 = self._make_layer(block, hidden_size[0], num_blocks[0], stride=1,
                                        norm_layer=norm_layer, conv_layer=conv_layer)
         self.layer2 = self._make_layer(block, hidden_size[1], num_blocks[1], stride=2,

@@ -76,6 +76,9 @@ class ResNet(ScalableModule):
             self.input_shape = [None, 3, 32, 32]
         elif dataset == 'Fmnist':
             self.input_shape = [None, 1, 28, 28]
+        else:
+            raise RuntimeError(f"Not support dataset={dataset}")
+        
         if width_scale != 1.:
             hidden_size = [int(hs * width_scale) for hs in hidden_size]
         self.bn_type = bn_type

@@ -445,7 +445,7 @@ if __name__ == '__main__':
     ModelClass = get_model_fh(args.data, args.model)
     running_model = ModelClass(
         track_running_stats=False, num_classes=fed.num_classes,
-        width_scale=args.width_scale,
+        width_scale=args.width_scale, dataset=args.data
     ).to(device)
     
 

@@ -81,7 +81,7 @@ class _Federation:
             from utils.data_loader import prepare_cifar100_data
             prepare_data = prepare_cifar100_data
             DataClass = Cifar100Dataset
-        elif data == 'fmnist':
+        elif data == 'Fmnist':
             num_classes = 100
             from utils.data_utils import FmnistDataset
             from utils.data_loader import prepare_fmnist_data

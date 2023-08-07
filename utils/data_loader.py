@@ -5,7 +5,7 @@ from torch.utils.data import Subset
 from torch.utils.data import DataLoader
 
 from utils.data_utils import DomainNetDataset, DigitsDataset, Partitioner, \
-    CifarDataset, Cifar100Dataset, ClassWisePartitioner, extract_labels
+    CifarDataset, Cifar100Dataset, FmnistDataset, ClassWisePartitioner, extract_labels
 
 
 def compose_transforms(trns, image_norm):
@@ -115,27 +115,18 @@ def get_central_data(name: str, domains: list, percent=1., image_norm='none',
                       for domain in domains]
         test_sets = [Cifar100Dataset(domain, train=False,transform=trn_test)
                      for domain in domains]
-    elif name.lower() == 'cifar100':
-        CIFAR_MEAN = [0.5071, 0.4865, 0.4409]
-        CIFAR_STD = [0.2673, 0.2564, 0.2762]
+    elif name.lower() == 'fmnist':
         if image_norm == 'default':
             image_norm = 'torch'
         for domain in domains:
-            if domain not in Cifar100Dataset.all_domains:
+            if domain not in FmnistDataset.all_domains:
                 raise ValueError(f"Invalid domain: {domain}")
-        trn_train = transforms.Compose([transforms.RandomCrop(32, padding=4),
-                     transforms.RandomHorizontalFlip(),
-                     transforms.ToTensor(),
-                     transforms.Normalize(CIFAR_MEAN, CIFAR_STD)])
-        
-    
-        trn_test = transforms.Compose([transforms.ToTensor(),
-                                       transforms.Normalize(CIFAR_MEAN, CIFAR_STD)])
-        
+        trn_train = transforms.Compose([transforms.ToTensor()])
+        trn_test = transforms.Compose([transforms.ToTensor()])
 
-        train_sets = [Cifar100Dataset(domain, train=True, transform=trn_train)
+        train_sets = [FmnistDataset(domain, train=True, transform=trn_train)
                       for domain in domains]
-        test_sets = [Cifar100Dataset(domain, train=False,transform=trn_test)
+        test_sets = [FmnistDataset(domain, train=False,transform=trn_test)
                      for domain in domains]
     else:
         raise NotImplementedError(f"name: {name}")
@@ -397,6 +388,25 @@ def prepare_cifar100_data(args, domains=['cifar100'], shuffle_eval=False, n_clas
     )
     return train_loaders, val_loaders, test_loaders, clients
 
+def prepare_fmnist_data(args, domains=['fmnist'], shuffle_eval=False, n_class_per_user=-1,
+                       n_user_per_domain=1, partition_seed=42, partition_mode='uni', val_ratio=0.2,
+                       eq_domain_train_size=True, subset_with_logits=False,
+                       consistent_test_class=False,
+                       ):
+    train_sets, test_sets = get_central_data('fmnist', domains)
+
+    train_loaders, val_loaders, test_loaders, clients = make_fed_data(
+        train_sets, test_sets, args.batch, domains, shuffle_eval=shuffle_eval,
+        partition_seed=partition_seed, n_user_per_domain=n_user_per_domain,
+        partition_mode=partition_mode,
+        val_ratio=val_ratio, eq_domain_train_size=eq_domain_train_size, percent=args.percent,
+        min_n_sample_per_share=10, subset_with_logits=subset_with_logits,
+        n_class_per_user=n_class_per_user,
+        test_batch_size=args.test_batch if hasattr(args, 'test_batch') else args.batch,
+        consistent_test_class=consistent_test_class,
+        partition_alpha=args.partition_alpha
+    )
+    return train_loaders, val_loaders, test_loaders, clients
 
 class SubsetWithLogits(Subset):
     r"""

@@ -3,6 +3,7 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision.datasets import CIFAR10
 from torchvision.datasets import CIFAR100
+from torchvision.datasets import FashionMNIST
 import torchvision.transforms as transforms
 from PIL import Image
 from collections import defaultdict
@@ -106,7 +107,18 @@ class Cifar100Dataset(CIFAR100):
         data_path = os.path.join(DATA_PATHS["cifar100"], domain)
         super().__init__(data_path, train=train, transform=transform, download=download)
 
+class FmnistDataset(FashionMNIST):
+    all_domains = ['fmnist']
+    resorted_domains = {
+        0: ['fmnist'],
+    }
+    num_classes = 10  # may not be correct
 
+    def __init__(self, domain='fmnist', train=True, transform=None, download=True):
+        assert domain in self.all_domains, f"Invalid domain: {domain}"
+        data_path = os.path.join(DATA_PATHS["fmnist"], domain)
+        super().__init__(data_path, train=train, transform=transform, download=download)
+        
 class DomainNetDataset(Dataset):
     all_domains = ['clipart', 'infograph', 'painting', 'quickdraw', 'real', 'sketch']
     resorted_domains = {

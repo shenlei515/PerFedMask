@@ -81,6 +81,12 @@ class _Federation:
             from utils.data_loader import prepare_cifar100_data
             prepare_data = prepare_cifar100_data
             DataClass = Cifar100Dataset
+        elif data == 'fmnist':
+            num_classes = 100
+            from utils.data_utils import FmnistDataset
+            from utils.data_loader import prepare_fmnist_data
+            prepare_data = prepare_fmnist_data
+            DataClass = FmnistDataset
         else:
             raise ValueError(f"Unknown dataset: {data}")
         all_domains = DataClass.resorted_domains[args.domain_order]

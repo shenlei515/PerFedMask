@@ -56,13 +56,7 @@ def get_model_fh(data, model):
             ModelClass = AlexNet
         else:
             raise ValueError(f"Invalid model: {model}")
-    elif data == 'Cifar10':
-        if model in ['preresnet18']:  # From heteroFL
-            from nets.HeteFL.preresne import resnet18
-            ModelClass = resnet18
-        else:
-            raise ValueError(f"Invalid model: {model}")
-    elif data == 'Cifar100':
+    elif data in ['Cifar10', 'Fmnist','Cifar100']:
         if model in ['preresnet18']:  # From heteroFL
             from nets.HeteFL.preresne import resnet18
             ModelClass = resnet18
@@ -75,7 +69,7 @@ def get_model_fh(data, model):
 
 def layerWiseModelPartition(dataset, names, paramSize):
 
-    if dataset in ['Cifar10', 'Cifar100']:
+    if dataset in ['Cifar10', 'Fmnist', 'Cifar100']:
 
         layersNum = 10
         LayerParams = np.zeros(layersNum)
@@ -131,31 +125,31 @@ def expand_subLayer_Mask(dataset, N_users, LayerMaskVec, layersNum, names, param
             
             if (LayerMaskVec[userIdx, layerIdx] >= 0.5):
                 
-                if dataset == 'Cifar100':
+                # if dataset == 'Cifar100':
                     
-                    if (layerIdx==0):
+                #     if (layerIdx==0):
                         
-                        for subLayerIdx in range(3):
+                #         for subLayerIdx in range(3):
                     
-                            subLayerNames = np.array([names[subLayerIdx]])
-                            selectedLayerParamSize = paramSize[names.index(subLayerNames)]
-                            computable_body_layers[userIdx].append(subLayerNames.item())
-                            computableParamNum += selectedLayerParamSize
+                #             subLayerNames = np.array([names[subLayerIdx]])
+                #             selectedLayerParamSize = paramSize[names.index(subLayerNames)]
+                #             computable_body_layers[userIdx].append(subLayerNames.item())
+                #             computableParamNum += selectedLayerParamSize
                         
                         
-                    else:
+                #     else:
                         
                         
-                        for subLayerNames in names:
+                #         for subLayerNames in names:
                             
-                            if 'layers.'+str(layerIdx-1)+'.' in subLayerNames:
+                #             if 'layers.'+str(layerIdx-1)+'.' in subLayerNames:
                         
-                                selectedLayerParamSize = paramSize[names.index(subLayerNames)]
-                                computable_body_layers[userIdx].append(subLayerNames)
-                                computableParamNum += selectedLayerParamSize
+                #                 selectedLayerParamSize = paramSize[names.index(subLayerNames)]
+                #                 computable_body_layers[userIdx].append(subLayerNames)
+                #                 computableParamNum += selectedLayerParamSize
                                 
                                 
-                elif dataset == 'Cifar10':
+                if dataset in ['Cifar10', 'Fmnist', 'Cifar100']:
                     
                     if (layerIdx==0):
                         

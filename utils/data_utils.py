@@ -318,13 +318,14 @@ class ClassWisePartitioner(Partitioner):
         # reorganize labels by class
         min_size = -1
         idx_by_class = defaultdict(list)
+        print("label", labels)
         if len(labels) > 1e5:
             labels_iter = tqdm(labels, leave=False, desc='sort labels')
         else:
             labels_iter = labels
         for i, label in enumerate(labels_iter):
             idx_by_class[label].append(i)
-        
+        print("idx_by_class", idx_by_class)
         n_class = len(idx_by_class)
         assert n_user * self.n_class_per_share > n_class, f"Cannot split {n_class} classes into " \
                                                           f"{n_user} users when each user only " \

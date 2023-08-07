@@ -350,7 +350,7 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
     pm_gfl_acc_list_bp = [None for _ in range(fed.client_num)]
     pm_gfl_acc_list = [None for _ in range(fed.client_num)]
     
-    n_sample_list = [len(loader.dataset.targets) for loader in val_loaders]
+    n_sample_list = [len(loader.dataset.dataset.targets) for loader in val_loaders]
     print("n_sample_list", n_sample_list)
     n_sample_val = sum(n_sample_list)
     for client_idx in range(fed.client_num):

@@ -104,7 +104,7 @@ class Cifar100Dataset(CIFAR100):
 
     def __init__(self, domain='cifar100', train=True, transform=None, download=True):
         assert domain in self.all_domains, f"Invalid domain: {domain}"
-        data_path = os.path.join(DATA_PATHS["cifar100"], domain)
+        data_path = os.path.join(DATA_PATHS["Cifar100"], domain)
         super().__init__(data_path, train=train, transform=transform, download=download)
 
 class FmnistDataset(FashionMNIST):
@@ -116,7 +116,7 @@ class FmnistDataset(FashionMNIST):
 
     def __init__(self, domain='fmnist', train=True, transform=None, download=True):
         assert domain in self.all_domains, f"Invalid domain: {domain}"
-        data_path = os.path.join(DATA_PATHS["fmnist"], domain)
+        data_path = os.path.join(DATA_PATHS["Fmnist"], domain)
         super().__init__(data_path, train=train, transform=transform, download=download)
         
 class DomainNetDataset(Dataset):

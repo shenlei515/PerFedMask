@@ -385,7 +385,7 @@ class ClassWisePartitioner(Partitioner):
 
 
 def extract_labels(dataset: Dataset):
-    if hasattr(dataset, 'targets'):\
+    if hasattr(dataset, 'targets'):
         print("dataset.targets", dataset.targets)
         return dataset.targets
     dl = DataLoader(dataset, batch_size=512, drop_last=False, num_workers=4, shuffle=False)

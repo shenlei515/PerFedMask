@@ -324,7 +324,7 @@ class ClassWisePartitioner(Partitioner):
             labels_iter = labels
         for i, label in enumerate(labels_iter):
             idx_by_class[label].append(i)
-
+        
         n_class = len(idx_by_class)
         assert n_user * self.n_class_per_share > n_class, f"Cannot split {n_class} classes into " \
                                                           f"{n_user} users when each user only " \

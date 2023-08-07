@@ -383,12 +383,13 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
             # Personalization
             val_loss, val_acc = personalization(val_model, train_loaders[client_idx], val_loaders[client_idx], 
                                                 loss_fun, global_lr, device)
+            val_acc_list[client_idx] = val_acc
             
             # test PERSONALIZED PM globally
             pm_gfl_acc_accu=0
             for loader_idx in range(fed.client_num):
                 _, val_acc = test(val_model, val_loaders[loader_idx], loss_fun, device)
-                pm_gfl_acc_accu += val_acc_bp * n_sample_list[loader_idx]
+                pm_gfl_acc_accu += val_acc * n_sample_list[loader_idx]
             pm_gfl_acc = pm_gfl_acc_accu / n_sample_val
             pm_gfl_acc_list[client_idx] = pm_gfl_acc
             
@@ -400,7 +401,6 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
             
             # Log
             val_loss_mt.append(val_loss)
-            val_acc_list[client_idx] = val_acc
             if verbose > 0:
                 print(' {:<19s} Val {:s}Loss: {:.4f} | Val {:s}Acc: {:.4f}'.format(
                     'User-'+fed.clients[client_idx], mark.upper(), val_loss, mark.upper(), val_acc))

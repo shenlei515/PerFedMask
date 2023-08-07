@@ -345,12 +345,21 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
     
     val_acc_list = [None for _ in range(fed.client_num)]
     val_loss_mt = AverageMeter()
+    
+    gm_gfl_acc_list = [None for _ in range(fed.client_num)]
+    pm_gfl_acc_list_bp = [None for _ in range(fed.client_num)]
+    pm_gfl_acc_list = [None for _ in range(fed.client_num)]
+    
+    n_sample_list = [len(loader.dataset.targets) for loader in val_loaders]
+    print("n_sample_list", n_sample_list)
+    n_sample_val = sum(n_sample_list)
     for client_idx in range(fed.client_num):
         fed.download(running_model, client_idx)
         val_model = copy.deepcopy(running_model)
         # Test
         # Loss and accuracy before personalization
-        val_loss_bp, val_acc_bp = test(val_model, val_loaders[client_idx], loss_fun, device) 
+        val_loss_bp, val_acc_bp = test(val_model, val_loaders[client_idx], loss_fun, device)
+        
         
         # Log
         val_loss_mt_bp.append(val_loss_bp)
@@ -363,12 +372,32 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
         }, commit=False)
         
         if args.test:     
+            # test PM globally
+            pm_gfl_acc_accu_bp=0
+            for loader_idx in range(fed.client_num):
+                _, val_acc_bp = test(val_model, val_loaders[loader_idx], loss_fun, device)
+                pm_gfl_acc_accu_bp += val_acc_bp * n_sample_list[loader_idx]
+            pm_gfl_acc_bp = pm_gfl_acc_accu_bp / n_sample_val
+            pm_gfl_acc_list_bp[client_idx] = pm_gfl_acc_bp
             
             # Personalization
-            
             val_loss, val_acc = personalization(val_model, train_loaders[client_idx], val_loaders[client_idx], 
                                                 loss_fun, global_lr, device)
-    
+            
+            # test PERSONALIZED PM globally
+            pm_gfl_acc_accu=0
+            for loader_idx in range(fed.client_num):
+                _, val_acc = test(val_model, val_loaders[loader_idx], loss_fun, device)
+                pm_gfl_acc_accu += val_acc_bp * n_sample_list[loader_idx]
+            pm_gfl_acc = pm_gfl_acc_accu / n_sample_val
+            pm_gfl_acc_list[client_idx] = pm_gfl_acc
+            
+            # global model accuracy
+            fed.download(running_model, -1)
+            val_model = copy.deepcopy(running_model)
+            _, gm_acc = test(val_model, val_loaders[client_idx], loss_fun, device)
+            gm_gfl_acc_list[client_idx] = gm_acc
+            
             # Log
             val_loss_mt.append(val_loss)
             val_acc_list[client_idx] = val_acc
@@ -379,9 +408,14 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
                 f"{fed.clients[client_idx]} val_{mark}-acc": val_acc,
             }, commit=False)
             
-    if args.test:  
-        
-        return val_acc_list, val_loss_mt.avg, val_acc_list_bp, val_loss_mt_bp.avg
+    if args.test:
+        res = {}
+        res['gm_gfl_acc'] = np.array(gm_gfl_acc_list)*np.array(n_sample_list)/n_sample_val
+        res['pm_pfl_acc_bp'] = np.array(val_acc_list_bp)*np.array(n_sample_list)/n_sample_val
+        res['pm_gfl_acc_bp'] = np.array(pm_gfl_acc_list_bp)*np.array(n_sample_list)/n_sample_val
+        res['pm_pfl_acc'] = np.array(val_acc_list)*np.array(n_sample_list)/n_sample_val
+        res['pm_gfl_acc'] = np.array(pm_gfl_acc_list)*np.array(n_sample_list)/n_sample_val
+        return res
     else:   
         
         return val_acc_list_bp, val_loss_mt_bp.avg, val_acc_list_bp, val_loss_mt_bp.avg
@@ -544,14 +578,17 @@ if __name__ == '__main__':
         # Test on clients
 
             
-        test_acc_list, _, test_acc_list_bp, _ = mask_fed_test(fed, running_model, train_dataset, test_loaders,
+        test_res = mask_fed_test(fed, running_model, train_dataset, test_loaders,
                                                                                  global_lr, args.verbose) 
             
+        print("test_res['gm_gfl_acc']", test_res['gm_gfl_acc'])
+        print("test_res['pm_pfl_acc_bp']", test_res['pm_pfl_acc_bp'])
+        print("test_res['pm_gfl_acc_bp']", test_res['pm_gfl_acc_bp'])
+        print("test_res['pm_pfl_acc']", test_res['pm_pfl_acc'])
+        print("test_res['pm_gfl_acc']", test_res['pm_gfl_acc'])
         
-        print(f"\n Average Test Acc Before Personalization: {np.mean(test_acc_list_bp)}")
-        wandb.summary[f'avg test acc bp'] = np.mean(test_acc_list_bp)
-        print(f"\n Average Test Acc: {np.mean(test_acc_list)}")
-        wandb.summary[f'avg test acc'] = np.mean(test_acc_list)
+        wandb.summary[f'test result'] = test_res
+        
         wandb.finish()
 
         exit(0)

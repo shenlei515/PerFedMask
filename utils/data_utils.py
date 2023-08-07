@@ -118,6 +118,7 @@ class FmnistDataset(FashionMNIST):
         assert domain in self.all_domains, f"Invalid domain: {domain}"
         data_path = os.path.join(DATA_PATHS["Fmnist"], domain)
         super().__init__(data_path, train=train, transform=transform, download=download)
+        self.targets = self.targets.cpu().numpy().tolist()
         
 class DomainNetDataset(Dataset):
     all_domains = ['clipart', 'infograph', 'painting', 'quickdraw', 'real', 'sketch']

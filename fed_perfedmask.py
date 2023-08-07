@@ -350,7 +350,7 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
     pm_gfl_acc_list_bp = [None for _ in range(fed.client_num)]
     pm_gfl_acc_list = [None for _ in range(fed.client_num)]
     
-    n_sample_list = [len(loader.dataset.dataset.targets) for loader in val_loaders]
+    n_sample_list = [len(loader) for loader in val_loaders]
     print("n_sample_list", n_sample_list)
     n_sample_val = sum(n_sample_list)
     for client_idx in range(fed.client_num):
@@ -410,11 +410,11 @@ def mask_fed_test(fed, running_model, train_loaders, val_loaders, global_lr, ver
             
     if args.test:
         res = {}
-        res['gm_gfl_acc'] = np.array(gm_gfl_acc_list)*np.array(n_sample_list)/n_sample_val
-        res['pm_pfl_acc_bp'] = np.array(val_acc_list_bp)*np.array(n_sample_list)/n_sample_val
-        res['pm_gfl_acc_bp'] = np.array(pm_gfl_acc_list_bp)*np.array(n_sample_list)/n_sample_val
-        res['pm_pfl_acc'] = np.array(val_acc_list)*np.array(n_sample_list)/n_sample_val
-        res['pm_gfl_acc'] = np.array(pm_gfl_acc_list)*np.array(n_sample_list)/n_sample_val
+        res['gm_gfl_acc'] = np.sum(np.array(gm_gfl_acc_list)*np.array(n_sample_list))/n_sample_val
+        res['pm_pfl_acc_bp'] = np.sum(np.array(val_acc_list_bp)*np.array(n_sample_list))/n_sample_val
+        res['pm_gfl_acc_bp'] = np.sum(np.array(pm_gfl_acc_list_bp)*np.array(n_sample_list))/n_sample_val
+        res['pm_pfl_acc'] = np.sum(np.array(val_acc_list)*np.array(n_sample_list))/n_sample_val
+        res['pm_gfl_acc'] = np.sum(np.array(pm_gfl_acc_list)*np.array(n_sample_list))/n_sample_val
         return res
     else:   
         

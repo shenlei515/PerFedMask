@@ -469,7 +469,7 @@ if __name__ == '__main__':
     print(f"  mean_batch_iters: {mean_batch_iters}")
     
     # set experiment files, wandb
-    exp_folder = f'Alg_{args.algorithm}_C{fed.args.pr_nuser}_{args.data}'
+    exp_folder = f'Alg_{args.algorithm}_C{fed.args.pr_nuser}_{args.data}_{args.partition_alpha}'
     run_name, SAVE_FILE = render_run_name(args, exp_folder)
     wandb.init(group=run_name[:120], project=exp_folder,
                mode='offline' if args.no_log else 'online',

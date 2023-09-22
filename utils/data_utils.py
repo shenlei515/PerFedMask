@@ -136,6 +136,7 @@ class ImageNetDataset(ImageFolder):
             data_path = os.path.join(DATA_PATHS["ImageNet"], domain+"/val")
         super().__init__(data_path, transform=transform)
         print(f"if_train={train}:{len(self.targets)}")
+        print(self.targets)
         self.targets = self.targets
         
 class DomainNetDataset(Dataset):

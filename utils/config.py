@@ -28,6 +28,7 @@ if hostname.startswith('illidan') and int(hostname.split('-')[-1]) < 8:
         "Cifar10": data_root,
         "Cifar100": data_root,
         "Fmnist": data_root,
+        "ImageNet": data_root,
     }
 else:
     DATA_PATHS = {
@@ -37,4 +38,5 @@ else:
         "Cifar10": data_root,
         "Cifar100": data_root,
         "Fmnist": data_root,
+        "ImageNet": data_root,
     }

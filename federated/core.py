@@ -87,6 +87,12 @@ class _Federation:
             from utils.data_loader import prepare_fmnist_data
             prepare_data = prepare_fmnist_data
             DataClass = FmnistDataset
+        elif data == 'Tiny-ImageNet':
+            num_classes = 200
+            from utils.data_utils import ImageNetDataset
+            from utils.data_loader import prepare_tiny_imagenet_data
+            prepare_data = prepare_tiny_imagenet_data
+            DataClass = ImageNetDataset
         else:
             raise ValueError(f"Unknown dataset: {data}")
         all_domains = DataClass.resorted_domains[args.domain_order]

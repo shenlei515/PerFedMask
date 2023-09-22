@@ -5,7 +5,7 @@ from torch.utils.data import Subset
 from torch.utils.data import DataLoader
 
 from utils.data_utils import DomainNetDataset, DigitsDataset, Partitioner, \
-    CifarDataset, Cifar100Dataset, FmnistDataset, ClassWisePartitioner, extract_labels
+    CifarDataset, Cifar100Dataset, FmnistDataset, ImageNetDataset, ClassWisePartitioner, extract_labels
 
 
 def compose_transforms(trns, image_norm):
@@ -127,6 +127,19 @@ def get_central_data(name: str, domains: list, percent=1., image_norm='none',
         train_sets = [FmnistDataset(domain, train=True, transform=trn_train)
                       for domain in domains]
         test_sets = [FmnistDataset(domain, train=False,transform=trn_test)
+                     for domain in domains]
+    elif name.lower() == 'imagenet':
+        if image_norm == 'default':
+            image_norm = 'torch'
+        for domain in domains:
+            if domain not in ImageNetDataset.all_domains:
+                raise ValueError(f"Invalid domain: {domain}")
+        trn_train = transforms.Compose([transforms.ToTensor()])
+        trn_test = transforms.Compose([transforms.ToTensor()])
+
+        train_sets = [ImageNetDataset(domain, train=True, transform=trn_train)
+                      for domain in domains]
+        test_sets = [ImageNetDataset(domain, train=False,transform=trn_test)
                      for domain in domains]
     else:
         raise NotImplementedError(f"name: {name}")
@@ -392,6 +405,26 @@ def prepare_fmnist_data(args, domains=['fmnist'], shuffle_eval=False, n_class_pe
                        consistent_test_class=False,
                        ):
     train_sets, test_sets = get_central_data('fmnist', domains)
+
+    train_loaders, val_loaders, test_loaders, clients = make_fed_data(
+        train_sets, test_sets, args.batch, domains, shuffle_eval=shuffle_eval,
+        partition_seed=partition_seed, n_user_per_domain=n_user_per_domain,
+        partition_mode=partition_mode,
+        val_ratio=val_ratio, eq_domain_train_size=eq_domain_train_size, percent=args.percent,
+        min_n_sample_per_share=10, subset_with_logits=subset_with_logits,
+        n_class_per_user=n_class_per_user,
+        test_batch_size=args.test_batch if hasattr(args, 'test_batch') else args.batch,
+        consistent_test_class=consistent_test_class,
+        partition_alpha=args.partition_alpha
+    )
+    return train_loaders, val_loaders, test_loaders, clients
+
+def prepare_tiny_imagenet_data(args, domains=['tiny-imagenet-200'], shuffle_eval=False, n_class_per_user=-1,
+                       n_user_per_domain=1, partition_seed=42, partition_mode='uni', val_ratio=0.2,
+                       eq_domain_train_size=True, subset_with_logits=False,
+                       consistent_test_class=False,
+                       ):
+    train_sets, test_sets = get_central_data('imagenet', domains)
 
     train_loaders, val_loaders, test_loaders, clients = make_fed_data(
         train_sets, test_sets, args.batch, domains, shuffle_eval=shuffle_eval,

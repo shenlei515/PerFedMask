@@ -20,7 +20,7 @@ from federated.core import HeteFederation as Federation
 def render_run_name(args, exp_folder):
     """Return a unique run_name from given args."""
     if args.model == 'default':
-        args.model = {'Digits': 'digit', 'Cifar10': 'preresnet18', 'Cifar100': 'preresnet18','Fmnist': 'preresnet18', 'DomainNet': 'alex'}[args.data]
+        args.model = {'Digits': 'digit', 'Cifar10': 'preresnet18', 'Cifar100': 'preresnet18','Fmnist': 'preresnet18', 'Tiny-ImageNet': 'preresnet18', 'DomainNet': 'alex'}[args.data]
     run_name = f'{args.model}'
     if args.width_scale != 1.: run_name += f'x{args.width_scale}'
     run_name += Federation.render_run_name(args)

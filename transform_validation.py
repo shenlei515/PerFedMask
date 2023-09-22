@@ -33,7 +33,7 @@ with open('../data/tiny-imagenet-200/words.txt') as words, open('../data/tiny-im
             wordmap[vals[0]] = classname
             create_dir('../data/tiny-imagenet-200/val/images/', classname)
             if os.path.exists('../data/tiny-imagenet-200/train/'+vals[0]):
-                os.rename('../data/tiny-imagenet-200/train/'+vals[0], './train/'+classname)
+                os.rename('../data/tiny-imagenet-200/train/'+vals[0], '../data/tiny-imagenet-200/train/'+classname)
             #create_dir('./test/images/', single_words[0])
             #create_dir('./train/images/', single_words[0])
 

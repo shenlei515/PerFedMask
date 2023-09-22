@@ -137,9 +137,9 @@ def get_central_data(name: str, domains: list, percent=1., image_norm='none',
         trn_train = transforms.Compose([transforms.ToTensor()])
         trn_test = transforms.Compose([transforms.ToTensor()])
 
-        train_sets = [ImageNetDataset(domain+"/train", transform=trn_train)
+        train_sets = [ImageNetDataset(domain, train=True, transform=trn_train)
                       for domain in domains]
-        test_sets = [ImageNetDataset(domain+"/val", transform=trn_test)
+        test_sets = [ImageNetDataset(domain, train=False,transform=trn_test)
                      for domain in domains]
     else:
         raise NotImplementedError(f"name: {name}")

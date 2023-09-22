@@ -148,7 +148,7 @@ def expand_subLayer_Mask(dataset, N_users, LayerMaskVec, layersNum, names, param
                 #                 computableParamNum += selectedLayerParamSize
                                 
                                 
-                if dataset in ['Cifar10', 'Fmnist', 'Cifar100']:
+                if dataset in ['Cifar10', 'Fmnist', 'Cifar100', 'Tiny-ImageNet']:
                     
                     if (layerIdx==0):
                         

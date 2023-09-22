@@ -68,7 +68,7 @@ def get_model_fh(data, model):
 
 def layerWiseModelPartition(dataset, names, paramSize):
 
-    if dataset in ['Cifar10', 'Fmnist', 'Cifar100']:
+    if dataset in ['Cifar10', 'Fmnist', 'Cifar100', 'Tiny-ImageNet']:
 
         layersNum = 10
         LayerParams = np.zeros(layersNum)

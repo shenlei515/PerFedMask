@@ -55,7 +55,7 @@ def get_model_fh(data, model):
             ModelClass = AlexNet
         else:
             raise ValueError(f"Invalid model: {model}")
-    elif data in ['Cifar10', 'Fmnist','Cifar100']:
+    elif data in ['Cifar10', 'Fmnist', 'Cifar100', 'Tiny-ImageNet']:
         if model in ['preresnet18']:  # From heteroFL
             from nets.HeteFL.preresne import resnet18
             ModelClass = resnet18

@@ -135,7 +135,7 @@ class ImageNetDataset(ImageFolder):
         else:
             data_path = os.path.join(DATA_PATHS["ImageNet"], domain+"/val")
         super().__init__(data_path, transform=transform)
-        self.targets = self.targets.cpu().numpy().tolist()
+        self.targets = self.targets
         
 class DomainNetDataset(Dataset):
     all_domains = ['clipart', 'infograph', 'painting', 'quickdraw', 'real', 'sketch']

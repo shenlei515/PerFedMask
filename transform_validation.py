@@ -7,7 +7,7 @@ def create_dir(base_path, classname):
 
 def reorg(filename, base_path, wordmap):
     print(len(wordmap))
-    with open('../data/tiny-imagenet-200/val/val_annotations.txt') as vals:
+    with open('val/val_annotations.txt') as vals:
         for line in vals:
             vals = line.split()
             imagename = vals[0]
@@ -19,7 +19,7 @@ def reorg(filename, base_path, wordmap):
 
 
 wordmap = {}
-with open('../data/tiny-imagenet-200/words.txt') as words, open('../data/tiny-imagenet-200/wnids.txt') as wnids:
+with open('words.txt') as words, open('wnids.txt') as wnids:
     for line in wnids:
         vals = line.split()
         wordmap[vals[0]] = ""
@@ -31,11 +31,11 @@ with open('../data/tiny-imagenet-200/words.txt') as words, open('../data/tiny-im
             if len(single_words) >= 2:
                 classname += '_'+re.sub(",", "", single_words[1])
             wordmap[vals[0]] = classname
-            create_dir('../data/tiny-imagenet-200/val/images/', classname)
-            if os.path.exists('../data/tiny-imagenet-200/train/'+vals[0]):
-                os.rename('../data/tiny-imagenet-200/train/'+vals[0], '../data/tiny-imagenet-200/train/'+classname)
+            create_dir('./val/images/', classname)
+            if os.path.exists('./train/'+vals[0]):
+                os.rename('./train/'+vals[0], './train/'+classname)
             #create_dir('./test/images/', single_words[0])
             #create_dir('./train/images/', single_words[0])
 
 
-reorg('../data/tiny-imagenet-200/val/val_annotations.txt', '../data/tiny-imagenet-200/val/images/', wordmap)
+reorg('val/val_annotations.txt', 'val/images/', wordmap)

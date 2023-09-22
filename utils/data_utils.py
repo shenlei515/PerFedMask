@@ -131,7 +131,7 @@ class ImageNetDataset(ImageFolder):
     def __init__(self, domain='tiny-imagenet-200', train=True, transform=None, download=True):
         assert domain in self.all_domains, f"Invalid domain: {domain}"
         data_path = os.path.join(DATA_PATHS["ImageNet"], domain)
-        super().__init__(data_path, train=train, transform=transform, download=download)
+        super().__init__(data_path, transform=transform)
         self.targets = self.targets.cpu().numpy().tolist()
         
 class DomainNetDataset(Dataset):

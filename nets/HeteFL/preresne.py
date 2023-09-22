@@ -76,6 +76,8 @@ class ResNet(ScalableModule):
             self.input_shape = [None, 3, 32, 32]
         elif dataset == 'Fmnist':
             self.input_shape = [None, 1, 28, 28]
+        elif dataset == 'Tiny-ImageNet':
+            self.input_shape = [None, 3, 64, 64]
         else:
             raise RuntimeError(f"Not support dataset={dataset}")
         

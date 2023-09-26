@@ -78,7 +78,7 @@ class MobileNetCifar(BaseModule, SlimmableMixin):
     cfg = [64, (128,2), 128, (256,2), 256, (512,2), 512, 512, 512, 512, 512, (1024,2), 1024]
     input_shape = [None, 3, 32, 32]
     
-    def __init__(self, num_classes=10, track_running_stats=False, width_scale=1., bn_type='bn', slimmabe_ratios=None):
+    def __init__(self, num_classes=10, track_running_stats=False, width_scale=1., bn_type='bn', slimmabe_ratios=None, dataset=None):
         super(MobileNetCifar, self).__init__()
         self._set_slimmabe_ratios(slimmabe_ratios)
         

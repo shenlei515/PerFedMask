@@ -60,7 +60,7 @@ def get_model_fh(data, model):
             from nets.HeteFL.preresne import resnet18
             ModelClass = resnet18
         elif model in ['mobilenet']:
-            from nets.slimmable_Nets import MobileNetCifar
+            from nets.Nets import MobileNetCifar
             ModelClass = MobileNetCifar
         else:
             raise ValueError(f"Invalid model: {model}")
@@ -69,29 +69,41 @@ def get_model_fh(data, model):
     return ModelClass
 
 
-def layerWiseModelPartition(dataset, names, paramSize):
-
+def layerWiseModelPartition(dataset, model, names, paramSize):
     if dataset in ['Cifar10', 'Fmnist', 'Cifar100', 'Tiny-ImageNet']:
-
-        layersNum = 10
-        LayerParams = np.zeros(layersNum)
+        if model == 'mobilenet':
         
-        for layerIdx in range(len(names)):
+            layersNum = 14
+            LayerParams = np.zeros(layersNum)
             
-            if (layerIdx==0):
-                LayerParams[0] += paramSize[layerIdx]
+            for layerIdx in range(len(names)):
                 
-            elif ((layerIdx==len(names)-2) or (layerIdx==len(names)-1)):
-                LayerParams[layersNum-1] += paramSize[layerIdx]
+                if ((layerIdx==0) or (layerIdx==1) or (layerIdx==2)):
+                    LayerParams[0] += paramSize[layerIdx]
+                    
+                else:
+                    selectedLayer = np.array([names[layerIdx]])
+                    LayerParams[int(selectedLayer[0].split('.')[1])+1] += paramSize[layerIdx]
+            
+            return  layersNum, LayerParams
+        else:
+            layersNum = 10
+            LayerParams = np.zeros(layersNum)
+            
+            for layerIdx in range(len(names)):
                 
-            else:
-                selectedLayer = np.array([names[layerIdx]])
-                LayerParams[int(selectedLayer[0].split('.')[0][-1])*2 + int(selectedLayer[0].split('.')[1]) - 1] += paramSize[layerIdx]
-                
-        
-        return  layersNum, LayerParams
-    
-    
+                if (layerIdx==0):
+                    LayerParams[0] += paramSize[layerIdx]
+                    
+                elif ((layerIdx==len(names)-2) or (layerIdx==len(names)-1)):
+                    LayerParams[layersNum-1] += paramSize[layerIdx]
+                    
+                else:
+                    selectedLayer = np.array([names[layerIdx]])
+                    LayerParams[int(selectedLayer[0].split('.')[0][-1])*2 + int(selectedLayer[0].split('.')[1]) - 1] += paramSize[layerIdx]
+                    
+            
+            return  layersNum, LayerParams
         
     elif dataset in ['DomainNet']:
         layersNum = 7
@@ -524,7 +536,7 @@ if __name__ == '__main__':
     
     
     
-    layersNum, LayerParams = layerWiseModelPartition(args.data, names, paramSize) 
+    layersNum, LayerParams = layerWiseModelPartition(args.data, args.model, names, paramSize) 
     
     LayerMaskVec, K_Vec = optMask(fed.client_sampler.tot(), layersNum, users_max_comp, totalParamNum, LayerParams)
     

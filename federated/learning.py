@@ -265,7 +265,7 @@ def test(model, data_loader, loss_fun, device, progress=False):
         total += target.size(0)
         pred = output.data.max(1)[1]
         correct += pred.eq(target.view(-1)).sum().item()
-    return loss_all / len(data_loader), correct/total
+    return loss_all / len(data_loader) if len(data_loader)!=0 else 0, correct/total if total!=0 else 0
 
 
 def refresh_bn(model, data_loader, device, progress=False):

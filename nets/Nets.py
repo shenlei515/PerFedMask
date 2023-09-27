@@ -102,7 +102,7 @@ class MobileNetCifar(nn.Module):
         return out
     
 class SimpleCNN(nn.Module):
-    def __init__(self, input_dim, hidden_dims, output_dim=10, input_channels=3, track_running_stats=True, width_scale=1.,
+    def __init__(self, input_dim, hidden_dims, output_dim=10, input_channels=3, num_classes=10, track_running_stats=True, width_scale=1.,
                  rescale_init=False, rescale_layer=False, dataset='Cifar10'):
         super(SimpleCNN, self).__init__()
         self.conv1 = nn.Conv2d(input_channels, 6, 5)

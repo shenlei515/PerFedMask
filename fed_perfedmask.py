@@ -62,6 +62,9 @@ def get_model_fh(data, model):
         elif model in ['mobilenet']:
             from nets.Nets import MobileNetCifar
             ModelClass = MobileNetCifar
+        elif model in ['simple-cnn']:
+            from nets.Nets import SimpleCNN
+            ModelClass = SimpleCNN
         else:
             raise ValueError(f"Invalid model: {model}")
     else:

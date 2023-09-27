@@ -91,7 +91,7 @@ def layerWiseModelPartition(dataset, model, names, paramSize):
             return  layersNum, LayerParams
         
         elif model == 'simple-cnn':
-            layersNum = 2
+            layersNum = 5
             LayerParams = np.zeros(layersNum)
             
             for layerIdx in range(len(names)):

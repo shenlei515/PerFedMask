@@ -100,3 +100,41 @@ class MobileNetCifar(nn.Module):
         out = out.view(out.size(0), -1)
         
         return out
+    
+class SimpleCNN(nn.Module):
+    def __init__(self, input_dim, hidden_dims, output_dim=10, input_channels=3):
+        super(SimpleCNN, self).__init__()
+        self.conv1 = nn.Conv2d(input_channels, 6, 5)
+        self.relu = nn.ReLU()
+        self.pool1 = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.pool2 = nn.MaxPool2d(2, 2)
+
+        # for now, we hard coded this network
+        # i.e. we fix the number of hidden layers i.e. 2 layers
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(input_dim, hidden_dims[0])
+        self.fc2 = nn.Linear(hidden_dims[0], hidden_dims[1])
+        self.linear = nn.Linear(hidden_dims[1], output_dim)
+
+    def forward(self, x):
+        x = self.pool1(self.relu(self.conv1(x)))
+        x = self.pool2(self.relu(self.conv2(x)))
+        x = self.flatten(x)
+        # x = x.view(-1, 16 * 5 * 5)
+
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.linear(x)
+        return x
+    
+    def extract_features(self, x):
+        x = self.pool1(self.relu(self.conv1(x)))
+        x = self.pool2(self.relu(self.conv2(x)))
+        x = self.flatten(x)
+        # x = x.view(-1, 16 * 5 * 5)
+
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        
+        return x

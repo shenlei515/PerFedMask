@@ -86,6 +86,24 @@ def layerWiseModelPartition(dataset, model, names, paramSize):
                     LayerParams[int(selectedLayer[0].split('.')[1])+1] += paramSize[layerIdx]
             
             return  layersNum, LayerParams
+        
+        elif model == 'simple-cnn':
+            layersNum = 2
+            LayerParams = np.zeros(layersNum)
+            
+            for layerIdx in range(len(names)):
+                
+                if ((layerIdx==0) or (layerIdx==1) or (layerIdx==2)):
+                    LayerParams[0] += paramSize[layerIdx]
+                elif ((layerIdx==3) or (layerIdx==4) or (layerIdx==4)):
+                    LayerParams[1] += paramSize[layerIdx]
+                else:
+                    # selectedLayer = np.array([names[layerIdx]])
+                    # LayerParams[int(selectedLayer[0].split('.')[1])+1] += paramSize[layerIdx]
+                    LayerParams[layerIdx-4] += paramSize[layerIdx]
+            
+            return  layersNum, LayerParams
+        
         else:
             layersNum = 10
             LayerParams = np.zeros(layersNum)
